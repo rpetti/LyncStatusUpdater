@@ -11,34 +11,43 @@ namespace LyncStatusUpdater
     {
         static void Main(string[] args)
         {
-            var client = LyncClient.GetClient();
-
-            if (client.State.ToString() == "SignedIn")
+            LyncClient client;
+            try
             {
-                var contactInfo = new Dictionary<PublishableContactInformationType, object>();
-                for (var i=0; i<args.Length; i++)
+                client = LyncClient.GetClient();
+                if (client.State.ToString() == "SignedIn")
                 {
-                    switch (args[i])
+                    var contactInfo = new Dictionary<PublishableContactInformationType, object>();
+                    for (var i = 0; i < args.Length; i++)
                     {
-                        case "-Away":
-                            contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.Away);
-                            break;
-                        case "-Available":
-                            contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.Free);
-                            break;
-                        case "-Busy":
-                            contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.Busy);
-                            break;
-                        case "-DoNotDisturb":
-                            contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.DoNotDisturb);
-                            break;
-                        case "-Status":
-                            contactInfo.Add(PublishableContactInformationType.PersonalNote, args[i + 1]);
-                            break;
+                        switch (args[i])
+                        {
+                            case "-Away":
+                                contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.Away);
+                                break;
+                            case "-Available":
+                                contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.Free);
+                                break;
+                            case "-Busy":
+                                contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.Busy);
+                                break;
+                            case "-DoNotDisturb":
+                                contactInfo.Add(PublishableContactInformationType.Availability, ContactAvailability.DoNotDisturb);
+                                break;
+                            case "-Status":
+                                contactInfo.Add(PublishableContactInformationType.PersonalNote, args[i + 1]);
+                                break;
+                        }
                     }
+                    var pub = client.Self.BeginPublishContactInformation(contactInfo, null, null);
+                    client.Self.EndPublishContactInformation(pub);
                 }
-                var pub = client.Self.BeginPublishContactInformation(contactInfo, null, null);
-                client.Self.EndPublishContactInformation(pub);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Error initializing Lync Interface");
+                Console.WriteLine(e.ToString());
+                Environment.Exit(1);
             }
         }
     }
